@@ -255,16 +255,22 @@ function displayResult(data) {
     });
     resultDiv.append(extraDiv);
 
-//    console.log("missionResults=", missionResults);
- // 处理记录
+    console.log("missionResults=", missionResults);
+    // 处理记录
     let recordStr = '';
     for (let id in missionResults) {
         if (missionResults[id].incomplete.length === 0) {
             recordStr += `${id} 全完成\n`;
+        } else if (missionResults[id].incomplete.length === 6) {
+            // 如果所有任务均未完成，直接输出“全部任務未完成”
+            recordStr += `${id} 全部任務未完成\n`;
         } else {
-            recordStr += `${id} ${missionResults[id].incomplete.join('、')} 未完成\n`;
+            // 输出未完成任务的 ID，只保留数字
+            const incompleteTasks = missionResults[id].incomplete.map(task => task.replace('任務', ''));
+            recordStr += `${id} 任務${incompleteTasks.join('、')} 未完成\n`;
         }
     }
+
 
     saveRecord(recordStr.trim());
     displayRecords(); // 更新显示记录
