@@ -74,7 +74,8 @@ function searchUID() {
     .fail(function(jqXHR) {
         // 当请求失败时显示错误信息
         if (jqXHR.responseText) {
-            $('#result').html('<div>出錯了: ' + jqXHR.responseText + ' 請輸入正確的UID</div>');
+            var errorM = '未搜尋到您的 UID，請至<a href="https://docs.google.com/spreadsheets/d/1pqu3CQfHbmvnc122q6Eii9LU_v8BUD-tNuPr2X86-Ow/edit#gid=1980706030" target="_blank">官方表單</a>確認';
+            $('#result').html('<div>出錯了: ' + jqXHR.responseText + ' 請輸入正確的UID<br>' + errorM + '</div>');
         } else {
             $('#result').html('<div>出錯了: ' + jqXHR.statusText + '</div>');
         }
@@ -83,6 +84,8 @@ function searchUID() {
         clearInterval(loadingInterval); // 清除点数循环
         $('#result').css('display', 'block'); // 请求完成后显示结果区域
         $('.search-icon').css('display', 'none');
+        // 重新启用输入框
+        $('#uidInput').prop('disabled', false);
     });
 }
 
@@ -166,6 +169,4 @@ function displayResult(data) {
     });
     resultDiv.append(extraDiv);
 
-    // 重新启用输入框
-    $('#uidInput').prop('disabled', false);
 }
