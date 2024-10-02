@@ -27,7 +27,10 @@ $(document).ready(function() {
             searchUID(); // 调用搜索函数
         }
     });
-
+    var uid;
+    // 加载并显示记录
+    displayRecords();
+    
     const savedUID = localStorage.getItem('savedUID');
     if (savedUID) {
         $('#uidInput').val(savedUID); // 将保存的 UID 填入输入框
@@ -35,8 +38,85 @@ $(document).ready(function() {
     }
 });
 
+function saveRecord(recordStr) {
+    let today = new Date();
+    let expiryDate = new Date(today);
+    expiryDate.setDate(today.getDate() + 1); // 设置过期时间为一天后
+
+    // 创建记录对象
+    const recordObject = {
+        record: recordStr,
+        expiry: expiryDate.toISOString() // 将过期日期转换为 ISO 字符串
+    };
+
+    // 从 localStorage 中获取当前记录
+    let records = JSON.parse(localStorage.getItem('missionRecords')) || [];
+
+    // 解析记录中的 UID（假设 UID 在字符串的开始）
+    const uid = recordStr.split(' ')[0];
+
+    // 查找是否已存在相同 UID 的记录，并替换
+    const index = records.findIndex(item => item.record.startsWith(uid));
+    if (index !== -1) {
+        records[index] = recordObject; // 替换现有记录
+    } else {
+        records.push(recordObject); // 添加新记录
+    }
+
+    localStorage.setItem('missionRecords', JSON.stringify(records)); // 更新 localStorage
+    displayRecords(); // 更新显示记录
+}
+
+
+// 显示记录
+function displayRecords() {
+    let records = JSON.parse(localStorage.getItem('missionRecords')) || [];
+    let today = new Date();
+
+    // 清除过期记录
+    records = records.filter(r => new Date(r.expiry) > today);
+    localStorage.setItem('missionRecords', JSON.stringify(records));
+
+    // 显示记录
+    let recordDiv = $('#recordList');
+    recordDiv.html(''); // 清空现有记录
+    if (records.length === 0) {
+        recordDiv.css('display', 'none'); // 如果记录为空，隐藏记录列表
+    } else {
+        recordDiv.css('display', 'block'); // 如果有记录，显示记录列表
+        records.forEach(item => {
+            recordDiv.append(`<label><div class="record-place"><input type="checkbox" class="record-checkbox" checked> ${item.record}</div></label>`);
+        });
+    }
+}
+
+// 复制到剪贴板
+$('#copyButton').on('click', function() {
+    let textToCopy = '';
+    $('.record-checkbox:checked').each(function() {
+        let text = $(this).parent().text().trim();
+        textToCopy += text + '\n';
+    });
+
+    // 使用剪贴板API复制文本
+    navigator.clipboard.writeText(textToCopy).then(function() {
+        alert('已複製內容！');
+    }, function(err) {
+        alert('複製失敗：' + err);
+    });
+});
+
+// 清除记录
+$('#clearRecords').on('click', function() {
+    $('#recordList').empty(); // 清空记录列表
+    localStorage.removeItem('missionRecords'); // 清除 localStorage 中的记录
+    $('#recordList').css('display', 'none');
+    
+});
+
+
 function searchUID() {
-    var uid = $('#uidInput').val(); // 使用 jQuery 获取 UID
+    uid = $('#uidInput').val(); // 使用 jQuery 获取 UID
     // 禁用输入框
     $('#uidInput').prop('disabled', true);
 
@@ -68,7 +148,7 @@ function searchUID() {
         if (data) {
             displayResult(data);
         } else {
-            $('#result').html('<div>未找到 UID。</div>');
+            $('#result').html('<div>未找到 UID: '+ uid + '</div>');
         }
     }, 'json') // 这里指定返回的数据类型为 JSON
     .fail(function(jqXHR) {
@@ -93,7 +173,10 @@ function searchUID() {
 function displayResult(data) {
     var resultDiv = $('#result');
     resultDiv.html(''); // 清空之前的结果
-
+    var missionResults = {};
+    if (!missionResults[uid]) {
+        missionResults[uid] = { completed: [], incomplete: [] };
+    }
     var isMismatch = false; // 用来标记是否存在不匹配
 
     // 比对 firstRow 和 mission 第二项的内容
@@ -145,6 +228,9 @@ function displayResult(data) {
                 color: 'red',
                 fontWeight: 'bold'
             });
+            missionResults[uid].incomplete.push(`任務${j}`);
+        } else if (data.data[j] === 'T') {
+            missionResults[uid].completed.push(`任務${j}`);
         }
         statusRow.append(td);
     }
@@ -169,4 +255,18 @@ function displayResult(data) {
     });
     resultDiv.append(extraDiv);
 
+//    console.log("missionResults=", missionResults);
+ // 处理记录
+    let recordStr = '';
+    for (let id in missionResults) {
+        if (missionResults[id].incomplete.length === 0) {
+            recordStr += `${id} 全完成\n`;
+        } else {
+            recordStr += `${id} ${missionResults[id].incomplete.join('、')} 未完成\n`;
+        }
+    }
+
+    saveRecord(recordStr.trim());
+    displayRecords(); // 更新显示记录
 }
+

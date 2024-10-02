@@ -115,3 +115,55 @@ h3 {
     background-color: #f9f9f9;
     border-left: 5px solid #4A90E2;
 }
+
+#recordList {
+    background-color: #c0dfe2;
+    padding: 15px;
+    border-radius: 5px;
+    display: none;
+
+}
+
+#recordList div {
+    padding: 10px;                /* 内边距 */
+    margin: 5px 0;               /* 上下外边距 */
+    background-color: #f9f9f9;   /* 背景颜色 */
+    border: 1px solid #ccc;      /* 边框样式 */
+    border-radius: 5px;          /* 边框圆角 */
+    display: flex;                /* 使用 flexbox 布局 */
+    align-items: center;          /* 垂直居中对齐 */
+    transition: background-color 0.3s; /* 背景颜色过渡效果 */
+}
+
+#recordList div:hover {
+    background-color: #e6f7ff;   /* 悬停时背景颜色 */
+}
+
+.record-checkbox {
+    width: 15px; /* 设置宽度 */
+    height: 15px; /* 设置高度 */
+    margin: 0px 20px 0 5px;
+    transform: scale(1.5); /* 调整大小 */
+    cursor: pointer; /* 鼠标悬停时变成指针 */
+}
+
+.record-placeb {
+    display: flex;
+    justify-content: space-between;
+    padding: 30px;
+}
+
+.record-placeb button{
+    width: auto;
+    padding: 10px 15px;
+}
+
+.record-placeb button:nth-of-type(2) {
+    background-color: #960b0b; /* 设置背景颜色为红色 */
+    color: white; /* 设置文字颜色为白色，以确保可读性 */
+    border: none; /* 去掉默认边框 */
+}
+
+.record-placeb button:nth-of-type(2):hover {
+    background-color: lightcoral; /* 鼠标悬停时背景颜色变为浅红色 */
+}
