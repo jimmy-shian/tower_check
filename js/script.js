@@ -90,7 +90,7 @@ function displayRecords() {
     }
 }
 
-// 复制到剪贴板
+// 複製到剪贴板
 $('#copyButton').on('click', function() {
     let textToCopy = '';
     $('.record-checkbox:checked').each(function() {
@@ -98,7 +98,11 @@ $('#copyButton').on('click', function() {
         textToCopy += text + '\n';
     });
 
-    // 使用剪贴板API复制文本
+    // 检查要複製的文本是否为空
+    if (textToCopy.trim() === '') {
+        return; // 如果内容为空，则退出函数，不执行复制
+    }
+    // 使用剪贴板API複製文本
     navigator.clipboard.writeText(textToCopy).then(function() {
         alert('已複製內容！');
     }, function(err) {
@@ -154,7 +158,7 @@ function searchUID() {
     .fail(function(jqXHR) {
         // 当请求失败时显示错误信息
         if (jqXHR.responseText) {
-            var errorM = '未搜尋到您的 UID，請至<a href="https://docs.google.com/spreadsheets/d/1pqu3CQfHbmvnc122q6Eii9LU_v8BUD-tNuPr2X86-Ow/edit#gid=1980706030" target="_blank">官方表單</a>確認';
+            var errorM = '未搜尋到您的 UID: '+ uid +'，請至<a href="https://docs.google.com/spreadsheets/d/1pqu3CQfHbmvnc122q6Eii9LU_v8BUD-tNuPr2X86-Ow/edit#gid=1980706030" target="_blank">官方表單</a>確認';
             $('#result').html('<div>出錯了: ' + jqXHR.responseText + ' 請輸入正確的UID<br>' + errorM + '</div>');
         } else {
             $('#result').html('<div>出錯了: ' + jqXHR.statusText + '</div>');
