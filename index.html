@@ -3,164 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="img/discord.png" type="image/png">
     <title>UID 搜尋</title>
-    <script>
-        // 模拟的返回数据
-        /*
-        const data = {
-            data: [28218873, 'T', 'T', 'T', 'T', 'F', 'T', 5],
-            firstRow: [
-                '最後更新日期: 2024-10-01',
-                '- 黃金蝦 10 隻\n- 人面雛鳥10隻\n- 靈魂 x 300',
-                '- 異彩史萊姆 10 隻\n- 龍刻背包 5 格',
-                '- 瘋頭 1 隻\n- 靈精魄 x 10',
-                '- 人面怪鳥 1 隻\n- 金果蛾龍 5 隻',
-                '- 體力藥水 100 點 x 1\n- 背包擴充 5 格',
-                '- 魔法石 1 顆\r\n- 背包擴充 5 格',
-                ''
-            ],
-            secondRow: ['DC新玩家 UID', '任務1', '任務2', '任務3', '任務4', '任務5', '任務6', '任務完成數'],
-            mission : [[1,"","",""],[2,"成功挑戰10月 每月挑戰的 Lv.7","- 異彩史萊姆 10 隻","- 龍刻背包 5 格"],[3,"成功獲得「正幸」","- 瘋頭1隻","- 靈精魄 x 10"],[4,"","",""],[5,"","",""],[6,"成功獲得「魯米納斯 ‧ 瓦倫泰」","- 魔法石 1 顆","- 背包擴充 5 格"],["Extra1","完成任意 4 個或以上任務","- 霓彩鳥 1 隻",""],["Extra2","完成 所有任務","- 魔法石 2 顆",""]]
-        };
-        */
-        function searchUID() {
-            var uid = document.getElementById('uidInput').value;
+    <link rel="stylesheet" href="css/style.css">
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
 
-            if (!uid) {
-                document.getElementById('result').innerHTML = '<div>請輸入 UID</div>';
-                return;
-            }
-
-            // 注释掉 POST 请求部分以使用模拟数据
-//            displayResult(data);
-            /**/
-            var scriptUrl = "https://script.google.com/macros/s/AKfycbzIzNd7hB_9Eyx7KFMr_j6xbcD76_WvsZC459DqGYDCwVCZ5Z4852gUatu-6yb8G82O2w/exec";
-
-            fetch(scriptUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ UID: uid })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                console.log(" response.json()=",  response.json());
-                displayResult( response.json() );
-//                return response.json();
-            })
-            .then(data => {
-                console.log(" data=",  data);
-
-            })
-            .catch(error => {
-                document.getElementById('result').innerHTML = '<div>出錯了: ' + error + '</div>';
-            });
-
-        }
-
-        // 顯示返回的結果
-        function displayResult(data) {
-            var resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = ''; // 清空之前的結果
-            
-            // 添加提示信息
-            var warningDiv = document.createElement('div');
-            warningDiv.style.color = 'red'; // 設定提示信息顏色
-            warningDiv.innerHTML = '任務完成度可能還未更新，請以<a href="https://docs.google.com/spreadsheets/d/1pqu3CQfHbmvnc122q6Eii9LU_v8BUD-tNuPr2X86-Ow/edit#gid=1980706030" target="_blank">官方表單</a>為主';
-            resultDiv.appendChild(warningDiv);
-            
-            if (data) {
-                // 创建一个表格
-                var table = document.createElement('table');
-                table.border = '1';
-                table.style.width = '100%';
-                table.style.borderCollapse = 'collapse';
-
-                // 添加表头
-                var headerRow = document.createElement('tr');
-                for (var i = 0; i < data.secondRow.length; i++) {
-                    var th = document.createElement('th');
-                    th.innerHTML = data.secondRow[i];
-                    headerRow.appendChild(th);
-                }
-                table.appendChild(headerRow);
-
-                // 添加任务详情行
-                var missionDetailRow = document.createElement('tr');
-                var missionDetailCell = document.createElement('th');
-                missionDetailCell.innerHTML = '任務詳情';
-                missionDetailRow.appendChild(missionDetailCell);
-                
-                for (var j = 1; j < data.secondRow.length; j++) {
-                    var missionTd = document.createElement('th');
-                    if (j === 1) {
-                        missionTd.innerHTML = data.mission[0][1]; // 任务详情
-                    } else if (j === 2) {
-                        missionTd.innerHTML = data.mission[1][1]; // 任务详情
-                    } else if (j === 3) {
-                        missionTd.innerHTML = data.mission[2][1]; // 任务详情
-                    } else if (j === 4) {
-                        missionTd.innerHTML = data.mission[3][1]; // 任务详情
-                    } else if (j === 5) {
-                        missionTd.innerHTML = data.mission[4][1]; // 任务详情
-                    } else if (j === 6) {
-                        missionTd.innerHTML = data.mission[5][1]; // 任务详情
-                    } else {
-                        missionTd.innerHTML = ''; // 其他保持空白
-                    }
-                    missionDetailRow.appendChild(missionTd);
-                }
-                table.appendChild(missionDetailRow);
-
-                // 添加任务状态行
-                var statusRow = document.createElement('tr');
-                for (var j = 0; j < data.secondRow.length; j++) {
-                    var td = document.createElement('td');
-                    if (j === 0) {
-                        td.innerHTML = data.data[0]; // UID
-                    } else {
-                        td.innerHTML = data.data[j]; // 任務狀態
-                    }
-                    statusRow.appendChild(td);
-                }
-                table.appendChild(statusRow);
-
-                // 添加奖励信息行
-                var rewardRow = document.createElement('tr');
-                for (var k = 0; k < data.firstRow.length; k++) {
-                    var rewardTd = document.createElement('td');
-                    if (k === 0) {
-                        rewardTd.innerHTML = ''; // 第一列不显示奖励内容
-                    } else {
-                        rewardTd.innerHTML = data.firstRow[k] ? data.firstRow[k].replace(/\n/g, '<br>') : ''; // 奖励详情
-                    }
-                    rewardRow.appendChild(rewardTd);
-                }
-                table.appendChild(rewardRow);
-
-                // 将表格添加到结果区域
-                resultDiv.appendChild(table);
-
-                // 添加 Extra 部分
-                var extraDiv = document.createElement('div');
-                extraDiv.innerHTML = '<h3>額外任務</h3>';
-                data.mission.slice(6).forEach(extraMission => {
-                    extraDiv.innerHTML += `<div>${extraMission[0]}: ${extraMission[1]} ${extraMission[2] || ''}</div>`;
-                });
-                resultDiv.appendChild(extraDiv);
-            } else {
-                resultDiv.innerHTML = '<div>未找到 UID。</div>';
-            }
-        }
-    </script>
 </head>
 <body>
     <h2>搜尋 UID</h2>
-    <input type="text" id="uidInput" placeholder="輸入 UID" value="814771175">
-    <button onclick="searchUID()">搜尋</button>
+    <div style="display: flex;">
+        <input type="text" id="uidInput" placeholder="輸入 UID" >
+        <button onclick="searchUID()">搜尋
+            <box-icon name='file-find' animation='tada' class="search-icon"></box-icon>
+        </button>
+    </div>
+
     <div id="result"></div>
+    
+    <script src="js/script.js"></script>
+    
 </body>
 </html>

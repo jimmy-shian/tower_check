@@ -1,0 +1,117 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+h2 {
+    color: #4A90E2;
+    text-align: center;
+}
+
+input[type="text"] {
+    width: 70%;
+    padding: 10px;
+    border: 2px solid #4A90E2;
+    border-radius: 5px;
+    margin-right: 10px;
+    font-size: 16px;
+}
+
+button {
+    display: flex;
+    width: 100px;
+    padding: 10px 5px;
+    background-color: #4A90E2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    justify-content: space-evenly;
+    transition: background-color 0.3s ease; /* 添加過渡效果 */
+}
+
+button:hover {
+    background-color: #357ABD;
+}
+
+            .search-icon{
+                display: none;
+            }
+            
+.table-place {
+    overflow-x: auto; /* 超出部分顯示滾動條 */
+    padding: 10px;
+    margin-top: 10px; /* 顯示一些間距 */
+    border: 1px solid #ccc; /* 可選：設定邊框 */
+    border-radius: 5px; /* 可選：設定圓角 */
+    background-color: #efe4ff; /* 可選：設定背景顏色 */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* 可選：設定陰影 */
+    
+        &::-webkit-scrollbar{
+          height: 10px;
+          background-color: #bcbcbc;
+        }
+        &::-webkit-scrollbar-thumb{
+          border-radius: 5px;
+          margin: 0 5px;
+          background-color: #727272;
+
+        }
+}
+            
+table {
+    min-width: 900px; /* 設定 div 的最大高度 */
+    background-color: white;
+}
+
+#result {
+    display: none; /* 預設不顯示 */
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+
+th, td, tr {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+th {
+    background-color: #4A90E2;
+    color: white;
+}
+
+tr {
+    background-color: white;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.warning {
+    color: red;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+h3 {
+    color: #4A90E2;
+    margin-top: 20px;
+}
+
+.extra-mission {
+    margin-top: 5px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-left: 5px solid #4A90E2;
+}
