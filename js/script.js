@@ -31,11 +31,27 @@ $(document).ready(function() {
     // 加载并显示记录
     displayRecords();
     
+    // 获取当前月份 (1-12)，并转换为两位数格式
+    var currentMonth = new Date().getMonth() + 1; // getMonth() 返回值是 0-11，需要加 1
+    var formattedMonth = ("0" + currentMonth).slice(-2); // 确保是两位数
+
+    // 将默认月份设置为当前月份
+    $('#monthSelect').val(formattedMonth);
+    
     const savedUID = localStorage.getItem('savedUID');
     if (savedUID) {
         $('#uidInput').val(savedUID); // 将保存的 UID 填入输入框
         searchUID(); // 自动搜索
     }
+    
+    // 當月份選擇器的值改變時觸發
+    $('#monthSelect').change(function() {
+        var uidInput = $('#uidInput').val(); // 獲取 UID 輸入框的值
+
+        if (uidInput) { searchUID(); }// UID 不為空，觸發搜尋
+
+    });
+
 });
 
 function saveRecord(recordStr) {
@@ -121,13 +137,17 @@ $('#clearRecords').on('click', function() {
 
 function searchUID() {
     uid = $('#uidInput').val(); // 使用 jQuery 获取 UID
+    var month = $('#monthSelect').val(); // 获取选中的月份
+    
     // 禁用输入框
     $('#uidInput').prop('disabled', true);
+    $('#monthSelect').prop('disabled', true); // 禁用月份選擇器
 
-    if (!uid) {
-        $('#result').css('display', 'block').html('<div>請輸入 UID</div>');
+    if (!uid || !/^\d+$/.test(uid)) {  // 判斷 uid 是否為空或不是純數字
+        $('#result').css('display', 'block').html('<div>請輸入有效的 UID</div>');
         // 重新启用输入框
         $('#uidInput').prop('disabled', false);
+        $('#monthSelect').prop('disabled', false); // 禁用月份選擇器
         return;
     } else {
         localStorage.setItem('savedUID', uid); // 将 UID 保存到 localStorage
@@ -139,38 +159,50 @@ function searchUID() {
     const dots = ['.', '..', '...'];
     let dotIndex = 0; // 当前显示的点数索引
     const loadingInterval = setInterval(function() {
-        $('#result').text('搜尋中請稍後' + dots[dotIndex]); // 更新文本
+        $('#result').text('搜尋中請稍後' + dots[dotIndex]).css("font-size", "1.5rem"); // 更新文本
         dotIndex = (dotIndex + 1) % dots.length; // 更新索引以循环
     }, 500); // 每 500 毫秒更新一次
 
     $('.search-icon').css('display', 'block');
 
-    var scriptUrl = "https://script.google.com/macros/s/AKfycbzW3D-bsSDVQV0mg-cOKT0JVfpKwIeYxO9hmC7oU3AnCc5V49cJJQzpgoKijLNPylAaQA/exec";
+    var scriptUrl = "https://script.google.com/macros/s/AKfycbymAbg1r0Xc1BtBf-Nn7PTjw9ZU66ShRd_oLXLykI0NKsqRVZV0D62aq1UDNxiM7up5Ow/exec";
 
     // 使用 jQuery 的 POST 方法
-    $.post(scriptUrl, { UID: uid }, function(data) {
-        if (data) {
-            displayResult(data);
-        } else {
-            $('#result').html('<div>未找到 UID: '+ uid + '</div>');
-        }
-    }, 'json') // 这里指定返回的数据类型为 JSON
-    .fail(function(jqXHR) {
-        // 当请求失败时显示错误信息
-        if (jqXHR.responseText) {
-            var errorM = '未搜尋到您的 UID: '+ uid +'，請至<a href="https://docs.google.com/spreadsheets/d/1pqu3CQfHbmvnc122q6Eii9LU_v8BUD-tNuPr2X86-Ow/edit#gid=1980706030" target="_blank">官方表單</a>確認';
-            $('#result').html('<div>出錯了: ' + jqXHR.responseText + ' 請輸入正確的UID<br>' + errorM + '</div>');
-        } else {
-            $('#result').html('<div>出錯了: ' + jqXHR.statusText + '</div>');
-        }
-    })
-    .always(function() {
-        clearInterval(loadingInterval); // 清除点数循环
-        $('#result').css('display', 'block'); // 请求完成后显示结果区域
-        $('.search-icon').css('display', 'none');
-        // 重新启用输入框
-        $('#uidInput').prop('disabled', false);
-    });
+    $.post(scriptUrl, { UID: uid, month: month }, null, 'json') // 这里指定返回的数据类型为 JSON
+        .done(function(data) {
+            // 检查返回的数据是否包含错误
+            if (data.error) {
+                var errorM = '未搜尋到您的 UID: ' + uid + '，請至<a href="https://docs.google.com/spreadsheets/d/1pqu3CQfHbmvnc122q6Eii9LU_v8BUD-tNuPr2X86-Ow/edit#gid=1980706030" target="_blank">官方表單</a>確認';
+                $('#result').html('<div>出錯了: 請輸入正確的UID<br>' + errorM + '</div>');
+                return;
+            }
+
+            // 检查月份数据是否存在
+            if (data.monthExists === false) {
+                alert("選取的月份資料不存在");
+            } else {
+                console.log("data", data);
+                displayResult(data);
+            }
+        })
+        .fail(function(jqXHR) {
+            // 当请求失败时显示错误信息
+            if (jqXHR.responseText) {
+                var errorM = '未搜尋到您的 UID: ' + uid + '，請至<a href="https://docs.google.com/spreadsheets/d/1pqu3CQfHbmvnc122q6Eii9LU_v8BUD-tNuPr2X86-Ow/edit#gid=1980706030" target="_blank">官方表單</a>確認';
+                $('#result').html('<div>出錯了: ' + jqXHR.responseText + ' 請輸入正確的UID<br>' + errorM + '</div>');
+            } else {
+                $('#result').html('<div>出錯了: ' + jqXHR.statusText + '</div>');
+            }
+        })
+        .always(function() {
+            clearInterval(loadingInterval); // 清除点数循环
+            $('#result').css('display', 'block').css("font-size", "1.25rem");// 请求完成后显示结果区域
+            $('.search-icon').css('display', 'none');
+            // 重新启用输入框
+            $('#uidInput').prop('disabled', false);
+            $('#monthSelect').prop('disabled', false);
+        });
+
 }
 
 // 显示返回的结果
@@ -183,11 +215,16 @@ function displayResult(data) {
     }
     var isMismatch = false; // 用来标记是否存在不匹配
 
-    // 比对 firstRow 和 mission 第二项的内容
+    // 比对 firstRow 和 mission 第二,三项的内容
     for (var i = 1; i < data.firstRow.length - 1; i++) {
-        if (data.firstRow[i] !== data.mission[i - 1][2]) {
-            // 如果不相同，替换 firstRow 的内容为 mission 第二个位置
-            data.firstRow[i] = data.mission[i - 1][2];
+        // 去除空白和格式
+        var firstRowValue = data.firstRow[i].toString().replace(/\s+/g, '').trim(); // 去除空白
+        var missionValue = (data.mission[i - 1][2] + data.mission[i - 1][3]).toString().replace(/\s+/g, '').trim(); // 去除空白
+//        console.log("text=", firstRowValue, missionValue);
+
+        if (firstRowValue !== missionValue) {
+            // 如果不相同，替换 firstRow 的内容为 mission 第二,三个位置
+            data.firstRow[i] = data.mission[i - 1][2] + data.mission[i - 1][3]; // 更新为去除格式的值
             isMismatch = true; // 设置不匹配标记
         }
     }
@@ -259,7 +296,7 @@ function displayResult(data) {
     });
     resultDiv.append(extraDiv);
 
-    console.log("missionResults=", missionResults);
+//    console.log("missionResults=", missionResults);
     // 处理记录
     let recordStr = '';
     for (let id in missionResults) {
