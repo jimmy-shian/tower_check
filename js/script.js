@@ -180,6 +180,7 @@ function searchUID() {
             // 检查月份数据是否存在
             if (data.monthExists === false) {
                 alert("選取的月份資料不存在");
+                displayResult(data);
             } else {
                 console.log("data", data);
                 displayResult(data);
