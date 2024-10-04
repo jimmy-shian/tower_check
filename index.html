@@ -13,9 +13,8 @@
 </head>
 <body>
     <h2>搜尋 UID</h2>
-    <div style="display: flex;">
-        <input type="text" id="uidInput" placeholder="輸入 UID" inputmode="decimal" >
-        
+    <div class="search-select-place">
+        <input type="text" id="uidInput" placeholder="輸入 UID" inputmode="decimal">
         <div class="month-selector">
             <label for="monthSelect">選擇月份:</label>
             <select id="monthSelect" class="month-select">
@@ -33,9 +32,8 @@
                 <option value="12">十二月</option>
             </select>
         </div>
-
         <button onclick="searchUID()">搜尋
-            <box-icon name='file-find' animation='tada' class="search-icon"></box-icon>
+            <box-icon name="file-find" animation="tada" class="search-icon" style="display: none;"></box-icon>
         </button>
     </div>
     
