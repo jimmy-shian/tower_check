@@ -13,9 +13,14 @@
             ''
         ],
         secondRow: ['DC新玩家 UID', '任務1', '任務2', '任務3', '任務4', '任務5', '任務6', '任務完成數'],
-        mission : [[1,"","",""],[2,"成功挑戰10月 每月挑戰的 Lv.7","- 異彩史萊姆 10 隻","- 龍刻背包 5 格"],[3,"成功獲得「正幸」","- 瘋頭1隻","- 靈精魄 x 10"],[4,"","",""],[5,"","",""],[6,"成功獲得「魯米納斯 ‧ 瓦倫泰」","- 魔法石 1 顆","- 背包擴充 5 格"],["Extra1","完成任意 4 個或以上任務","- 霓彩鳥 1 隻",""],["Extra2","完成 所有任務","- 魔法石 2 顆",""]]
+        mission : [[1,"","",""],[2,"成功挑戰10月 每月挑戰的 Lv.7","- 異彩史萊姆 10 隻","- 龍刻背包 5 格"],[3,"成功獲得「正幸」","- 瘋頭1隻","- 靈精魄 x 10"],[4,"","",""],[5,"","",""],[6,"成功獲得「魯米納斯 ‧ 瓦倫泰」","- 魔法石 1 顆","- 背包擴充 5 格"],["Extra1","完成任意 4 個或以上任務","- 霓彩鳥 1 隻",""],["Extra2","完成 所有任務","- 魔法石 2 顆",""]],
+        monthExists: false
     };
     */
+
+var currentMonth ;
+var month ;
+var monthExists ;
 
     // 監聽輸入框的鍵盤事件
 $(document).ready(function() {
@@ -32,7 +37,7 @@ $(document).ready(function() {
     displayRecords();
     
     // 获取当前月份 (1-12)，并转换为两位数格式
-    var currentMonth = new Date().getMonth() + 1; // getMonth() 返回值是 0-11，需要加 1
+    currentMonth = new Date().getMonth() + 1; // getMonth() 返回值是 0-11，需要加 1
     var formattedMonth = ("0" + currentMonth).slice(-2); // 确保是两位数
 
     // 将默认月份设置为当前月份
@@ -44,13 +49,13 @@ $(document).ready(function() {
         searchUID(); // 自动搜索
     }
     
-    // 當月份選擇器的值改變時觸發
-    $('#monthSelect').change(function() {
-        var uidInput = $('#uidInput').val(); // 獲取 UID 輸入框的值
+});
 
-        if (uidInput) { searchUID(); }// UID 不為空，觸發搜尋
+// 當月份選擇器的值改變時觸發
+$('#monthSelect').change(function() {
+    var uidInput = $('#uidInput').val(); // 獲取 UID 輸入框的值
 
-    });
+    if (uidInput) { searchUID(); }// UID 不為空，觸發搜尋
 
 });
 
@@ -137,17 +142,21 @@ $('#clearRecords').on('click', function() {
 
 function searchUID() {
     uid = $('#uidInput').val(); // 使用 jQuery 获取 UID
-    var month = $('#monthSelect').val(); // 获取选中的月份
+    month = $('#monthSelect').val(); // 获取选中的月份
     
     // 禁用输入框
     $('#uidInput').prop('disabled', true);
     $('#monthSelect').prop('disabled', true); // 禁用月份選擇器
+    $('.search-btn').prop('disabled', true);
+
 
     if (!uid || !/^\d+$/.test(uid)) {  // 判斷 uid 是否為空或不是純數字
         $('#result').css('display', 'block').html('<div>請輸入有效的 UID</div>');
         // 重新启用输入框
         $('#uidInput').prop('disabled', false);
         $('#monthSelect').prop('disabled', false); // 禁用月份選擇器
+        $('.search-btn').prop('disabled', false);
+
         return;
     } else {
         localStorage.setItem('savedUID', uid); // 将 UID 保存到 localStorage
@@ -165,7 +174,10 @@ function searchUID() {
 
     $('.search-icon').css('display', 'block');
 
-    var scriptUrl = "https://script.google.com/macros/s/AKfycbymAbg1r0Xc1BtBf-Nn7PTjw9ZU66ShRd_oLXLykI0NKsqRVZV0D62aq1UDNxiM7up5Ow/exec";
+    var scriptUrl = "https://script.google.com/macros/s/AKfycbwoJGZRmBIcrE4wo9DUGrkzRdFsYdz3wkhXZYzxQ1aibQoDO5d08cEtWsJE_Z588vGPkw/exec";
+
+    // 計時開始
+    const startTime = performance.now(); // 獲取當前時間（毫秒）
 
     // 使用 jQuery 的 POST 方法
     $.post(scriptUrl, { UID: uid, month: month }, null, 'json') // 这里指定返回的数据类型为 JSON
@@ -180,9 +192,11 @@ function searchUID() {
             // 检查月份数据是否存在
             if (data.monthExists === false) {
                 alert("選取的月份資料不存在");
+//                console.log("data", data);
+                monthExists = data.monthExists;
                 displayResult(data);
             } else {
-                console.log("data", data);
+//                console.log("data", data);s
                 displayResult(data);
             }
         })
@@ -202,9 +216,23 @@ function searchUID() {
             // 重新启用输入框
             $('#uidInput').prop('disabled', false);
             $('#monthSelect').prop('disabled', false);
-        });
+            $('.search-btn').prop('disabled', false);
 
+            // 計時結束
+            const endTime = performance.now(); // 獲取結束時間（毫秒）
+            const duration = endTime - startTime; // 計算執行時間（毫秒）
+
+            // 格式化執行時間為分:秒.毫秒
+            const minutes = Math.floor(duration / 60000);
+            const seconds = Math.floor((duration % 60000) / 1000);
+            const milliseconds = Math.floor(duration % 1000);
+
+            // 在控制台顯示執行時間
+            console.log(`執行時間: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}.${milliseconds}`);
+        });
 }
+
+
 
 // 显示返回的结果
 function displayResult(data) {
@@ -231,7 +259,7 @@ function displayResult(data) {
     }
 
     // 如果存在不匹配，显示警告信息
-    if (isMismatch) {
+    if (isMismatch && currentMonth != month && monthExists) {
         var warningDiv = $('<div>').css('color', 'red').html('任務完成度可能還未更新，請以<a href="https://docs.google.com/spreadsheets/d/1pqu3CQfHbmvnc122q6Eii9LU_v8BUD-tNuPr2X86-Ow/edit#gid=1980706030" target="_blank">官方表單</a>為主');
         resultDiv.append(warningDiv);
     }
@@ -265,7 +293,7 @@ function displayResult(data) {
     var statusRow = $('<tr>');
     for (var j = 0; j < data.secondRow.length; j++) {
         var td = $('<td>').text(j === 0 ? data.data[0] || '--' : data.data[j] !== undefined ? data.data[j] : '--');
-        if (data.data[j] === 'F') {
+        if (data.data[j] === 'F' || data.data[j] === '' ) {
             td.css({
                 color: 'red',
                 fontWeight: 'bold'
@@ -295,7 +323,14 @@ function displayResult(data) {
     $.each(data.mission.slice(6), function(index, extraMission) {
         extraDiv.append(`<div>${extraMission[0]}: ${extraMission[1]} ${extraMission[2] || '--'}</div>`);
     });
+    
     resultDiv.append(extraDiv);
+    
+    if (isMismatch || currentMonth == month && !monthExists) {
+        var originalDiv = $('<div>').css("font-size", "1rem").html('<br>詳情請查看 <a href="https://docs.google.com/spreadsheets/d/1pqu3CQfHbmvnc122q6Eii9LU_v8BUD-tNuPr2X86-Ow/edit#gid=1980706030" target="_blank">官方表單</a>');
+        resultDiv.append(originalDiv);
+    }
+
 
 //    console.log("missionResults=", missionResults);
     // 处理记录
