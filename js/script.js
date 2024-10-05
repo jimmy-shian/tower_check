@@ -21,7 +21,7 @@
 var currentMonth ;
 var month ;
 var monthExists ;
-
+var isStrict = false;
     // 監聽輸入框的鍵盤事件
 $(document).ready(function() {
     // 當頁面加載完成後自動聚焦到輸入框
@@ -59,14 +59,22 @@ $('#monthSelect').change(function() {
 
 });
 
-function saveRecord(recordStr) {
+// 當 checkbox 狀態改變時觸發結果重新顯示
+$('#useStrictCheck').on('change', function() {
+    isStrict = $("#useStrictCheck").is(':checked');  // 判斷是否使用嚴格判斷
+    displayRecords(); // 更新显示记录
+
+});
+
+function saveRecord(recordStr, recordStr_a) {
     let today = new Date();
     let expiryDate = new Date(today);
     expiryDate.setDate(today.getDate() + 1); // 设置过期时间为一天后
 
     // 创建记录对象
     const recordObject = {
-        record: recordStr,
+        record1: recordStr,
+        record2: recordStr_a,
         expiry: expiryDate.toISOString() // 将过期日期转换为 ISO 字符串
     };
 
@@ -76,13 +84,22 @@ function saveRecord(recordStr) {
     // 解析记录中的 UID（假设 UID 在字符串的开始）
     const uid = recordStr.split(' ')[0];
 
-    // 查找是否已存在相同 UID 的记录，并替换
-    const index = records.findIndex(item => item.record.startsWith(uid));
-    if (index !== -1) {
-        records[index] = recordObject; // 替换现有记录
-    } else {
-        records.push(recordObject); // 添加新记录
+    function updateRecords(records, uid, record, recordObject) {
+        // 查找是否已存在相同 UID 的记录，并替换
+        const index = records.findIndex(item => item[record].startsWith(uid));
+        if (index !== -1) {
+            records[index] = recordObject; // 替换现有记录
+        } else {
+            records.push(recordObject); // 添加新记录
+        }
+
+        return records;
     }
+    // 查找是否已存在相同 UID 的记录，并替换
+    // 更新 records
+    records = updateRecords(records, uid, 'record1', recordObject);
+    records = updateRecords(records, uid, 'record2', recordObject);
+
 
     localStorage.setItem('missionRecords', JSON.stringify(records)); // 更新 localStorage
     displayRecords(); // 更新显示记录
@@ -93,6 +110,7 @@ function saveRecord(recordStr) {
 function displayRecords() {
     let records = JSON.parse(localStorage.getItem('missionRecords')) || [];
     let today = new Date();
+    isStrict = $("#useStrictCheck").is(':checked');  // 判斷是否使用嚴格判斷
 
     // 清除过期记录
     records = records.filter(r => new Date(r.expiry) > today);
@@ -106,7 +124,12 @@ function displayRecords() {
     } else {
         recordDiv.css('display', 'block'); // 如果有记录，显示记录列表
         records.forEach(item => {
-            recordDiv.append(`<label><div class="record-place"><input type="checkbox" class="record-checkbox" checked> ${item.record}</div></label>`);
+            if (isStrict){
+                recordDiv.append(`<label><div class="record-place"><input type="checkbox" class="record-checkbox" checked> ${item.record2}</div></label>`);
+
+            } else{
+                recordDiv.append(`<label><div class="record-place"><input type="checkbox" class="record-checkbox" checked> ${item.record1}</div></label>`);
+            }
         });
     }
 }
@@ -232,7 +255,21 @@ function searchUID() {
         });
 }
 
-
+// 生成记录字符串
+function generateRecordString(missionResults) {
+    let recordStr = '';
+    for (let id in missionResults) {
+        if (missionResults[id].incomplete.length === 0) {
+            recordStr += `${id} 全完成\n`;
+        } else if (missionResults[id].incomplete.length === 6) {
+            recordStr += `${id} 全部任務未完成\n`;
+        } else {
+            const incompleteTasks = missionResults[id].incomplete.map(task => task.replace('任務', ''));
+            recordStr += `${id} 任務${incompleteTasks.join('、')} 未完成\n`;
+        }
+    }
+    return recordStr;
+}
 
 // 显示返回的结果
 function displayResult(data) {
@@ -241,6 +278,10 @@ function displayResult(data) {
     var missionResults = {};
     if (!missionResults[uid]) {
         missionResults[uid] = { completed: [], incomplete: [] };
+    }
+    var missionResults_a = {};
+    if (!missionResults_a[uid]) {
+        missionResults_a[uid] = { completed: [], incomplete: [] };
     }
     var isMismatch = false; // 用来标记是否存在不匹配
 
@@ -292,19 +333,34 @@ function displayResult(data) {
     // 添加任务状态行
     var statusRow = $('<tr>');
     for (var j = 0; j < data.secondRow.length; j++) {
+        // 根據不同條件設置每行數據
         var td = $('<td>').text(j === 0 ? data.data[0] || '--' : data.data[j] !== undefined ? data.data[j] : '--');
-        if (data.data[j] === 'F' || data.data[j] === '' ) {
-            td.css({
-                color: 'red',
-                fontWeight: 'bold'
-            });
-            missionResults[uid].incomplete.push(`任務${j}`);
-        } else if (data.data[j] === 'T') {
-            missionResults[uid].completed.push(`任務${j}`);
-        }
+
+            // 非嚴格判斷：判斷 'F' 或空字串 ''
+            if (data.data[j] === 'F' || data.data[j] === '') {
+                td.css({
+                    color: 'red',
+                    fontWeight: 'bold'
+                });
+                missionResults_a[uid].incomplete.push(`任務${j}`);
+            } else if (data.data[j] === 'T') {
+                missionResults_a[uid].completed.push(`任務${j}`);
+            }
+            // 嚴格判斷：只判斷 'F'
+            if (data.data[j] === 'F') {
+                td.css({
+                    color: 'red',
+                    fontWeight: 'bold'
+                });
+                missionResults[uid].incomplete.push(`任務${j}`);
+            } else if (data.data[j] === 'T') {
+                missionResults[uid].completed.push(`任務${j}`);
+            }
+
         statusRow.append(td);
     }
     table.append(statusRow);
+
 
     // 添加奖励信息行
     var rewardRow = $('<tr>');
@@ -334,22 +390,12 @@ function displayResult(data) {
 
 //    console.log("missionResults=", missionResults);
     // 处理记录
-    let recordStr = '';
-    for (let id in missionResults) {
-        if (missionResults[id].incomplete.length === 0) {
-            recordStr += `${id} 全完成\n`;
-        } else if (missionResults[id].incomplete.length === 6) {
-            // 如果所有任务均未完成，直接输出“全部任務未完成”
-            recordStr += `${id} 全部任務未完成\n`;
-        } else {
-            // 输出未完成任务的 ID，只保留数字
-            const incompleteTasks = missionResults[id].incomplete.map(task => task.replace('任務', ''));
-            recordStr += `${id} 任務${incompleteTasks.join('、')} 未完成\n`;
-        }
-    }
+    // 处理记录
+    let recordStr = generateRecordString(missionResults);
+    let recordStr2 = generateRecordString(missionResults_a);
 
+    saveRecord(recordStr.trim(), recordStr2.trim());
 
-    saveRecord(recordStr.trim());
     displayRecords(); // 更新显示记录
 }
 

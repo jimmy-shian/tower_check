@@ -6,6 +6,15 @@ body {
     padding: 20px;
 }
 
+/* 禁用文本選取 */
+.no-select {
+  user-select: none; /* 禁用文本選取 */
+  -webkit-user-select: none; /* 針對 Safari 和 Chrome */
+  -moz-user-select: none; /* 針對 Firefox */
+  -ms-user-select: none; /* 針對 IE/Edge */
+}
+
+
 h2 {
     color: #4A90E2;
     text-align: center;
@@ -76,6 +85,65 @@ button:hover {
     background-color: #f1f1f1; /* 鼠标悬停时背景颜色 */
 }
 
+/* 美化 label */
+.custom-checkbox-label {
+  font-size: 16px; /* 調整字體大小 */
+  font-family: Arial, sans-serif; /* 字體樣式 */
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  color: #333;
+  position: relative; /* 讓伪元素定位 */
+  padding-bottom: 2px; /* 添加一點下方間距 */
+}
+
+/* 底線效果，使用伪元素 */
+.custom-checkbox-label::after {
+  content: ''; /* 伪元素內容為空 */
+  position: absolute;
+  width: 0; /* 初始寬度為0 */
+  height: 2px; /* 底線高度 */
+  background-color: #333; /* 底線顏色 */
+  left: 0;
+  bottom: 0;
+  transition: width 0.3s ease; /* 寬度漸變效果 */
+}
+
+/* hover效果 */
+.custom-checkbox-label:hover::after {
+  width: 100%; /* hover時，底線寬度變為100% */
+}
+
+
+/* 美化 checkbox */
+.custom-checkbox {
+  appearance: none; /* 移除默認樣式 */
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ccc;
+  border-radius: 4px; /* 圓角 */
+  position: relative;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease; /* 漸變效果 */
+}
+
+/* 勾選後的狀態 */
+.custom-checkbox:checked {
+  background-color: #96e69a; /* 背景變綠 */
+}
+
+/* 勾選後的圖標（勾選符號） */
+.custom-checkbox:checked::before {
+  content: "✔";
+  font-size: 14px;
+  color: #333;
+  position: absolute;
+  left: 3px;
+  top: -2px;
+  transition: all 0.3s ease; /* 勾選符號漸變 */
+}
+
 .table-place {
     overflow-x: auto; /* 超出部分顯示滾動條 */
     padding: 10px;
@@ -96,7 +164,7 @@ button:hover {
 
         }
 }
-            
+
 table {
     min-width: 900px; /* 設定 div 的最大高度 */
     background-color: white;
