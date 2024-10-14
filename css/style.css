@@ -66,6 +66,10 @@ button:hover {
         display: none;
     }
 
+#toggleButton{
+    background-color: #7d72ff;
+}
+
 .month-selector {
     margin-right: 35px;
     min-width: fit-content;
@@ -95,6 +99,7 @@ button:hover {
   color: #333;
   position: relative; /* 讓伪元素定位 */
   padding-bottom: 2px; /* 添加一點下方間距 */
+  margin-bottom: 10px;
 }
 
 /* 底線效果，使用伪元素 */
@@ -180,7 +185,7 @@ tr:last-child td:nth-last-child(-n+8) {
     white-space: nowrap; /* 禁止換行 */
 }
 
-#result {
+#result, #result_notice {
     display: none; /* 預設不顯示 */
     margin-top: 20px;
     padding: 20px;
@@ -189,7 +194,6 @@ tr:last-child td:nth-last-child(-n+8) {
     background-color: white;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
-
 
 th, td, tr {
     padding: 10px;
@@ -305,6 +309,20 @@ h3 {
     gap: 10px; /* 元素之間的間距 */
     align-items: center;
 }
+
+/* 定義閃爍效果 */
+@keyframes flash {
+    0% { background-color: yellow; }
+    50% { background-color: transparent; }
+    100% { background-color: yellow; }
+}
+
+/* 添加 .flash 類別，來控制閃爍 */
+.flash {
+    animation: flash 1s ease-in-out 2; /* 1秒鐘閃爍兩次 */
+}
+
+
 
 /* 當螢幕寬度小於 768 像素時，去除 padding */
 @media (max-width: 768px) {

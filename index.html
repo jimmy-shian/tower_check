@@ -32,15 +32,18 @@
                 <option value="12">十二月</option>
             </select>
         </div>
-        <button class="search-btn" onclick="searchUID()">搜尋
+        <button class="search-btn" onclick="extractUIDs()">搜尋
             <box-icon name="file-find" animation="tada" class="search-icon" style="display: none;"></box-icon>
         </button>
         
         <label class="custom-checkbox-label no-select">
-            <input type="checkbox" id="useStrictCheck" class="custom-checkbox"> 沒有任務顯示未完成
+            <input type="checkbox" id="useStrictCheck" class="custom-checkbox"> 沒有任務，顯示未完成
         </label>
 
     </div>
+     <button id="toggleButton">展開</button>
+    
+    <div id="result_notice"></div>
     
     <div id="result"></div>
     
