@@ -87,6 +87,11 @@ $('#toggleButton').on('click', function() {
     });
 });
 
+$('#clearBtn').on('click', function() {
+    $('#uidInput').val('');  // 使用 .val() 清除輸入框內容
+});
+
+
 function saveRecord(recordStr, recordStr_a) {
     let today = new Date();
     let expiryDate = new Date(today);

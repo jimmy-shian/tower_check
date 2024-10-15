@@ -14,7 +14,10 @@
 <body>
     <h2>搜尋 UID</h2>
     <div class="search-select-place">
-        <input type="text" id="uidInput" placeholder="輸入 UID" inputmode="decimal">
+        <div class="input-container">
+            <input type="text" id="uidInput" placeholder="輸入 UID，多個 UID 請用字符隔開" inputmode="decimal">
+            <button type="button" id="clearBtn" class="clear-btn" >X</button>
+        </div>
         <div class="month-selector">
             <label for="monthSelect">選擇月份:</label>
             <select id="monthSelect" class="month-select">
@@ -52,8 +55,8 @@
         <h3>搜尋紀錄</h3>
         <div id="recordList"></div>
         <div class='record-placeb'>
-            <button id="copyButton">複製選取項目</button>
-            <button id="clearRecords">清除所有紀錄</button>
+            <button class="search-btn" id="copyButton">複製選取項目</button>
+            <button class="search-btn" id="clearRecords">清除所有紀錄</button>
         </div>
 
     </div>

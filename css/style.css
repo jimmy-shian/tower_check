@@ -25,7 +25,7 @@ input[type="text"] {
     min-width: 6rem;
     width: 20rem;
     height: 2.25rem;
-    padding: 0 10px;
+    padding: 0 30px 0 10px;
     border: 2px solid #4A90E2;
     border-radius: 5px;
     margin-right: 20px;
@@ -37,7 +37,7 @@ input[type="text"]:hover {
     background-color: aliceblue;
 }
 
-button {
+.search-btn {
     margin-bottom: 10px;
     display: flex;
     width: 100px;
@@ -59,7 +59,7 @@ button {
     cursor: not-allowed; /* 禁用時的鼠標樣式 */
 }
 
-button:hover {
+.search-btn button:hover {
     background-color: #357ABD;
 }
     .search-icon{
@@ -68,8 +68,23 @@ button:hover {
 
 #toggleButton{
     background-color: #7d72ff;
+    margin-bottom: 10px;
+    display: flex;
+    width: 80px;
+    padding: 10px 5px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    justify-content: space-evenly;
+    transition: background-color 0.3s ease; /* 添加過渡效果 */
+    align-items: center;
 }
 
+#toggleButton:hover{
+    background-color: #b8b2ff;
+}
 .month-selector {
     margin-right: 35px;
     min-width: fit-content;
@@ -309,6 +324,31 @@ h3 {
     gap: 10px; /* 元素之間的間距 */
     align-items: center;
 }
+
+.input-container {
+    position: relative;
+    display: inline-block;
+}
+
+.clear-btn {
+    position: absolute;
+    right: 1.5rem;
+    top: .5rem;
+/*    transform: translate(-50%);*/
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.25rem;
+    color: #676767;
+    display: block;
+}
+
+.input-container button:hover{
+    transition: color 0.3s, text-shadow 0.2s; /* 背景和文字陰影的過渡效果 */
+    color: black;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* 添加文字阴影 */
+}
+
 
 /* 定義閃爍效果 */
 @keyframes flash {
