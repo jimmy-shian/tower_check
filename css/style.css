@@ -20,7 +20,7 @@ h2 {
     text-align: center;
 }
 
-input[type="text"] {
+.input-container input[type="text"] {
     margin-bottom: 10px;
     min-width: 6rem;
     width: 20rem;
@@ -33,7 +33,7 @@ input[type="text"] {
     transition: background-color 0.3s ease; /* 添加過渡效果 */
 }
 
-input[type="text"]:hover {
+.input-container input[type="text"]:hover {
     background-color: aliceblue;
 }
 
@@ -59,8 +59,8 @@ input[type="text"]:hover {
     cursor: not-allowed; /* 禁用時的鼠標樣式 */
 }
 
-.search-btn button:hover {
-    background-color: #357ABD;
+.search-btn:hover {
+    background-color: #3243c4;
 }
     .search-icon{
         display: none;
@@ -106,6 +106,7 @@ input[type="text"]:hover {
 
 /* 美化 label */
 .custom-checkbox-label {
+  height: auto;
   font-size: 16px; /* 調整字體大小 */
   font-family: Arial, sans-serif; /* 字體樣式 */
   display: inline-flex;
@@ -114,7 +115,7 @@ input[type="text"]:hover {
   color: #333;
   position: relative; /* 讓伪元素定位 */
   padding-bottom: 2px; /* 添加一點下方間距 */
-  margin-bottom: 10px;
+  margin-left: 10px;
 }
 
 /* 底線效果，使用伪元素 */
@@ -250,6 +251,11 @@ h3 {
 #recordArea {
     font-size: 1.25rem;
 }
+
+.recordArea-title{
+    display: flex;
+    align-items: center;
+}
 #recordList {
     background-color: #c0dfe2;
     padding: 15px;
@@ -307,14 +313,14 @@ h3 {
     padding: 10px 15px;
 }
 
-.record-placeb button:nth-of-type(2) {
+#clearRecords {
     margin: 0 10px;
     background-color: #960b0b; /* 设置背景颜色为红色 */
     color: white; /* 设置文字颜色为白色，以确保可读性 */
     border: none; /* 去掉默认边框 */
 }
 
-.record-placeb button:nth-of-type(2):hover {
+#clearRecords:hover {
     background-color: lightcoral; /* 鼠标悬停时背景颜色变为浅红色 */
 }
 
@@ -362,6 +368,67 @@ h3 {
     animation: flash 1s ease-in-out 2; /* 1秒鐘閃爍兩次 */
 }
 
+/* 修改文字區 */
+
+.text-modification-container {
+    display: flex;
+    flex-direction: column; /* 垂直排列子元素 */
+    margin-top: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.text-modification-container-in {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* 添加間距 */
+}
+.text-input-group {
+    flex: 1 1 250px; /* 調整 flex 屬性以適應容器 */
+    margin-bottom: 20px;
+}
+.text-input-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+textarea, input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 1.25rem;
+}
+textarea {
+    resize: vertical;
+}
+.text-modification-button {
+    background-color: #4CAF50; /* 綠色 */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    align-self: center; /* 按鈕居中 */
+}
+.text-modification-button:hover {
+    background-color: #45a049;
+}
+
+.show-text-modification-button {
+    background-color: #4CAF50; /* 綠色 */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
 
 
 /* 當螢幕寬度小於 768 像素時，去除 padding */
@@ -370,7 +437,7 @@ h3 {
         padding: 0; /* 去除 padding */
     }
 
-    input[type="text"] {
+    .input-container input[type="text"] {
         width: 12rem;
     }
     .month-selector {

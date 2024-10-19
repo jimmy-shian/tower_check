@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="img/discord.png" type="image/png">
-    <title>UID 搜尋</title>
+    <title>UID 搜尋任務完成度</title>
     <link rel="stylesheet" href="css/style.css">
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
 
+    <style>
+    </style>
+    
 </head>
 <body>
     <h2>搜尋 UID</h2>
@@ -35,14 +38,9 @@
                 <option value="12">十二月</option>
             </select>
         </div>
-        <button class="search-btn" onclick="extractUIDs()">搜尋
+        <button class="search-btn" id="search-btn" onclick="extractUIDs()">搜尋
             <box-icon name="file-find" animation="tada" class="search-icon" style="display: none;"></box-icon>
         </button>
-        
-        <label class="custom-checkbox-label no-select">
-            <input type="checkbox" id="useStrictCheck" class="custom-checkbox"> 沒有任務，顯示未完成
-        </label>
-
     </div>
      <button id="toggleButton">展開</button>
     
@@ -52,15 +50,52 @@
     
     
     <div id="recordArea">
-        <h3>搜尋紀錄</h3>
+        <div class="recordArea-title">
+            <h3>搜尋紀錄</h3>
+            <label class="custom-checkbox-label no-select">
+                <input type="checkbox" id="useStrictCheck" class="custom-checkbox"> 沒有任務，顯示未完成
+            </label>
+        </div>
+
         <div id="recordList"></div>
         <div class='record-placeb'>
             <button class="search-btn" id="copyButton">複製選取項目</button>
             <button class="search-btn" id="clearRecords">清除所有紀錄</button>
+            <button id="change-text-Button" class="show-text-modification-button">展開修改文字區</button>
         </div>
 
     </div>
+    <br>
     
+<div class="text-modification-container" style="display: none;">
+    <div class="text-modification-container-in"> <!-- 一開始隱藏 -->
+        <div class="text-input-group">
+            <label for="sourceText" class="text-input-label">貼上要修改的文字:</label>
+            <textarea id="sourceText" rows="10" class="text-input-textarea"></textarea>
+        </div>
+
+        <div class="text-input-group">
+            <label for="targetText" class="text-input-label">要修改的內容:</label>
+            <input type="text" id="targetText" placeholder="" class="text-input-field">
+            <label for="replacementText" class="text-input-label">修改後的內容:</label>
+            <input type="text" id="replacementText" placeholder="" class="text-input-field">
+        </div>
+
+        <div class="text-input-group">
+            <label for="resultText" class="text-input-label">完成:</label>
+            <textarea id="resultText" rows="10" readonly class="text-input-textarea"></textarea>
+        </div>
+    </div>
+    
+    <div class='record-placeb'>
+        <button id="change-text-Button-in" class="text-modification-button">修改文字內容</button>
+        <button class="search-btn" id="resultText-button" >複製選取項目</button> <!-- 一開始隱藏 -->
+    </div>
+</div>
+
+    <script>
+    </script>
+
     <script src="js/script.js"></script>
     
 </body>

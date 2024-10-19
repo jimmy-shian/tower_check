@@ -257,7 +257,7 @@ function showCustomNotification(message) {
     });
 
     // 顯示通知
-    notification.animate({ opacity: 1 }, 500).delay(1000).animate({ opacity: 0 }, 500, function() {
+    notification.animate({ opacity: 1 }, 500).delay(2000).animate({ opacity: 0 }, 500, function() {
         $(this).remove(); // 2秒後移除通知
     });
 }
@@ -312,7 +312,7 @@ function sendUIDsInBatches(uids, delay, batchSize = 1) {
             $('.search-icon').css('display', 'none');
             $('#uidInput').prop('disabled', false);
             $('#monthSelect').prop('disabled', false);
-            $('.search-btn').prop('disabled', false);
+            $('#search-btn').prop('disabled', false);
             if ( one_uid ){
                 $('#result_notice').text("搜尋完畢");
                 // 顯示後 2 秒隱藏結果通知
@@ -362,13 +362,13 @@ function searchUID(uid_str) {
 
     $('#uidInput').prop('disabled', true);
     $('#monthSelect').prop('disabled', true);
-    $('.search-btn').prop('disabled', true);
+    $('#search-btn').prop('disabled', true);
 
     if (!uid || !/^\d+$/.test(uid)) {
         $('#result_notice').html('<div>請輸入有效的 UID</div>');
         $('#uidInput').prop('disabled', false);
         $('#monthSelect').prop('disabled', false);
-        $('.search-btn').prop('disabled', false);
+        $('#search-btn').prop('disabled', false);
         return;
     } else {
         localStorage.setItem('savedUID', uid);
@@ -408,7 +408,8 @@ function searchUID(uid_str) {
             }
 
             if (data.monthExists === false) {
-                $('#result_notice').text("選取的月份資料不存在");
+                //$('#result_notice').text("選取的月份資料不存在");
+                showCustomNotification("選取的月份資料不存在");
                 monthExists = data.monthExists;
                 displayResult(data);
             } else {
@@ -436,7 +437,7 @@ function searchUID(uid_str) {
                 $('.search-icon').css('display', 'none');
                 $('#uidInput').prop('disabled', false);
                 $('#monthSelect').prop('disabled', false);
-                $('.search-btn').prop('disabled', false);
+                $('#search-btn').prop('disabled', false);
             }
 
             const endTime = performance.now();
@@ -593,3 +594,64 @@ function displayResult(data) {
 
     displayRecords();
 }
+
+
+// 修改文字區
+
+$('#change-text-Button').on('click', function() {
+    var textToCoptshow = "";
+    if ($(this).text() == '展開修改文字區') {
+        $('.text-modification-container').show(); // 顯示隱藏區域
+
+        $('.record-checkbox:checked').each(function() {
+            let text = $(this).parent().text().trim();
+            textToCoptshow += text + '\n';
+        });
+        if (textToCoptshow != ""){
+            $('#sourceText').val(textToCoptshow);
+        }
+
+        $(this).text('隱藏修改文字區'); // 修改按鈕文本
+    } else {
+        $('.text-modification-container').hide(); // 隱藏區域
+        $(this).text('展開修改文字區'); // 修改按鈕文本
+    }
+});
+
+$('#change-text-Button-in').on('click', function() {
+    const sourceText = $('#sourceText').val(); // 獲取源文本
+    const targetText = $('#targetText').val(); // 獲取目標文本
+    const replacementText = $('#replacementText').val(); // 獲取替換文本
+
+    // 創建精確匹配的正則表達式，使用 \b 來匹配目標文本邊界，避免部分匹配
+    const regex = new RegExp(`(${targetText})`, 'g'); 
+
+    // 將要修改的內容替換為新內容
+    const modifiedText = sourceText.split('\n').map(line => {
+        return line.replace(regex, replacementText); // 精確匹配後進行替換
+    }).join('\n');
+
+    // 顯示修改後的內容
+    $('#resultText').val(modifiedText); // 使用 jQuery 設置結果文本
+});
+
+
+        
+// 監聽複製按鈕的點擊事件
+$('#resultText-button').on('click', function() {
+    let textToCopy = $('#resultText').val();
+
+    // 檢查要複製的文本是否為空
+    if (textToCopy.trim() === '') {
+        return; // 如果內容為空，則退出函數
+    }
+
+    // 使用剪貼板 API 複製文本
+    navigator.clipboard.writeText(textToCopy).then(function() {
+        showCustomNotification('已複製內容！');
+    }, function(err) {
+        showCustomNotification('複製失敗：' + err);
+    });
+});
+
+//修改文字區結束
