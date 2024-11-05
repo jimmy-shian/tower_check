@@ -56,7 +56,7 @@ $(document).ready(function() {
     if (savedUID) {
         $('#uidInput').val(savedUID); // 将保存的 UID 填入输入框
 
-        extractUIDs(); // 自动搜索
+        //extractUIDs(); // 自动搜索
     }
     
 });
@@ -138,6 +138,11 @@ function saveRecord(recordStr, recordStr_a) {
 function displayRecords() {
     // 假設你已經包含 jQuery 並在 HTML 中添加了相應的結構
     $('a').on('click', function(e) {
+        // 獲取當前鏈接的 id
+        // 檢查 id 是否為 'officialFormLink'
+        if ( $(this).attr('id') === 'officialFormLink') {
+            return; // 如果是，則不執行任何操作
+        }
         e.preventDefault(); // 防止預設的錨點跳轉
         var uig = $(this).attr('href').substring(1); // 獲取 href 中的 id
         console.log("uig=", uig);
@@ -271,7 +276,6 @@ $('#clearRecords').on('click', function() {
     
 });
 
-
      
 
 function extractUIDs() {
@@ -287,7 +291,7 @@ function extractUIDs() {
 //zhe-tw — 2024/10查詢1004316880
 //moonnight_9907 — 昨天 18:10我783375644查詢 1019036672PeiXing — 昨天 20:11查詢74286024SimplePerson — 昨天 23:11查詢 1019229096 余仁傑 814771175— 今天 04:25查詢493506273`;
     
-    let uidMatches = inputText.match(/\d{7,10}\d/g);
+    let uidMatches = inputText.match(/\d{5,10}\d/g);
     
     if (uidMatches && uidMatches.length == 1) {
         one_uid = true;
@@ -298,7 +302,7 @@ function extractUIDs() {
     if (uidMatches && uidMatches.length > 0) {
         sendUIDsInBatches(uidMatches, 500);
     } else {
-        $('#result_notice').text("未找到有效的 UID");
+        $('#result_notice').html() + `未找到有效的 UID<br>`;
     }
 }
 
@@ -503,8 +507,22 @@ function displayResult(data) {
             isMismatch = true;
         }
     }
+    
+    let isMismatch_mission = false;
 
-    if (isMismatch && currentMonth != month && monthExists) {
+    // 從任務 1 開始檢查 (即 data.data[1] 對應 mission[1] 的描述)
+    for (let i = 1; i <= 6; i++) {
+        let taskStatus = data.data[i]; // 取得 T 或 F
+        let missionDescription = data.mission[i-1][1]; // 對應 mission 中的中文描述
+
+        // 如果 T 但是描述不存在，或 F 但描述存在，則有不匹配
+        if ( (taskStatus === 'T' || taskStatus === 'F') && !missionDescription ) {
+            isMismatch_mission = true;
+            break;
+        }
+    }
+
+    if (isMismatch && currentMonth != month && monthExists || isMismatch_mission) {
         var warningDiv = $('<div>').css('color', 'red').html('任務完成度可能還未更新，請以<a href="https://docs.google.com/spreadsheets/d/1pqu3CQfHbmvnc122q6Eii9LU_v8BUD-tNuPr2X86-Ow/edit#gid=1980706030" target="_blank">官方表單</a>為主');
         $('#result_notice').append(warningDiv);
     }
@@ -582,7 +600,7 @@ function displayResult(data) {
         resultDiv.append(extraDiv);
 
         if (isMismatch || currentMonth == month && !monthExists) {
-            var originalDiv = $('<div>').css("font-size", "1rem").html('<br>詳情請查看 <a href="https://docs.google.com/spreadsheets/d/1pqu3CQfHbmvnc122q6Eii9LU_v8BUD-tNuPr2X86-Ow/edit#gid=1980706030" target="_blank">官方表單</a>');
+            var originalDiv = $('<div>').css("font-size", "1rem").html('<br>詳情請查看 <a id="officialFormLink" href="https://docs.google.com/spreadsheets/d/1pqu3CQfHbmvnc122q6Eii9LU_v8BUD-tNuPr2X86-Ow/edit#gid=1980706030" target="_blank">官方表單</a>');
             resultDiv.append(originalDiv);
         }
     }

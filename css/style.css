@@ -414,6 +414,7 @@ textarea {
     cursor: pointer;
     font-size: 16px;
     align-self: center; /* 按鈕居中 */
+    transition: background-color 0.3s ease; /* 添加過渡效果 */
 }
 .text-modification-button:hover {
     background-color: #45a049;
@@ -427,8 +428,11 @@ textarea {
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
+    transition: background-color 0.3s ease; /* 添加過渡效果 */
 }
-
+.show-text-modification-button:hover {
+    background-color: #48864b;
+}
 
 
 /* 當螢幕寬度小於 768 像素時，去除 padding */
