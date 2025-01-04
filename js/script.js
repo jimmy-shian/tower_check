@@ -30,6 +30,7 @@ var extra_flag = false;
 var one_uid = false;
 var howmany = "";
 var out_index;
+
     // 監聽輸入框的鍵盤事件
 $(document).ready(function() {
 
@@ -390,12 +391,15 @@ function searchUID(uid_str) {
 
     $('.search-icon').css('display', 'block');
 
-    var scriptUrl = "https://script.google.com/macros/s/AKfycbwoJGZRmBIcrE4wo9DUGrkzRdFsYdz3wkhXZYzxQ1aibQoDO5d08cEtWsJE_Z588vGPkw/exec";
+    var scriptUrl = "https://script.google.com/macros/s/AKfycbxxPa0ShIoz98S0Z9dsG3HLDeIZC0vqNoW4lQQ6bxtJ5jdmPBih_0jvtw2E_-cufLzABg/exec";
 
     const startTime = performance.now();
 
-    $.post(scriptUrl, { UID: uid, month: month }, null, 'json')
-        .done(function(data) {
+    $.post(
+        scriptUrl,
+        { UID: uid, month: month },
+        function(data) {
+//                console.log("data=" + JSON.stringify(data));
             if (data.error) {
                 var errorM = '未搜尋到您的 UID: ' + `<a href='#${uid}'>${uid}</a>` + '，請至<a href="https://docs.google.com/spreadsheets/d/1pqu3CQfHbmvnc122q6Eii9LU_v8BUD-tNuPr2X86-Ow/edit#gid=1980706030" target="_blank">官方表單</a>確認';
                 if (one_uid){
