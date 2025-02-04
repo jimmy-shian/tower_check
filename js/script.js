@@ -253,7 +253,7 @@ function showCustomNotification(message) {
         top: '50%', // 垂直居中
         left: '50%', // 水平居中
         transform: 'translate(-50%, -50%)', // 將元素的中心點移到 (50%, 50%)
-        backgroundColor: '#444',
+        backgroundColor: '#fd6969',
         color: '#fff',
         padding: '10px',
         borderRadius: '5px',
@@ -291,6 +291,7 @@ function extractUIDs() {
 //查詢 1009972970
 //zhe-tw — 2024/10查詢1004316880
 //moonnight_9907 — 昨天 18:10我783375644查詢 1019036672PeiXing — 昨天 20:11查詢74286024SimplePerson — 昨天 23:11查詢 1019229096 余仁傑 814771175— 今天 04:25查詢493506273`;
+    localStorage.setItem('savedUID', inputText);
     
     let uidMatches = inputText.match(/\d{5,10}\d/g);
     
@@ -376,7 +377,7 @@ function searchUID(uid_str) {
         $('#search-btn').prop('disabled', false);
         return;
     } else {
-        localStorage.setItem('savedUID', uid);
+        //localStorage.setItem('savedUID', uid);
     }
 
     const dots = ['.', '..', '...'];
@@ -391,7 +392,7 @@ function searchUID(uid_str) {
 
     $('.search-icon').css('display', 'block');
 
-    var scriptUrl = "https://script.google.com/macros/s/AKfycbxxPa0ShIoz98S0Z9dsG3HLDeIZC0vqNoW4lQQ6bxtJ5jdmPBih_0jvtw2E_-cufLzABg/exec";
+    var scriptUrl = "https://script.google.com/macros/s/AKfycbwvGH3_82QrP_NoMtqLBLTI9pMoOvvxbhH0egM6m1f2RoV7YuuXBsSYan3CYtm2Gkmlew/exec";
 
     const startTime = performance.now();
 

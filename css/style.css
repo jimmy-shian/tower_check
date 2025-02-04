@@ -191,15 +191,15 @@ table {
     background-color: white;
 }
 
-/* 針對第一個 tr 的最後 8 個欄位 */
-tr:first-child th:nth-last-child(-n+8) {
-    white-space: nowrap; /* 禁止換行 */
-}
+    /* 針對第一個 tr 的最後 8 個欄位 */
+    tr:first-child th:nth-last-child(-n+8) {
+        white-space: nowrap; /* 禁止換行 */
+    }
 
-/* 針對最後一個 tr 的最後 8 個欄位 */
-tr:last-child td:nth-last-child(-n+8) {
-    white-space: nowrap; /* 禁止換行 */
-}
+    /* 針對最後一個 tr 的最後 8 個欄位 */
+    tr:last-child td:nth-last-child(-n+8) {
+        white-space: nowrap; /* 禁止換行 */
+    }
 
 #result, #result_notice {
     display: none; /* 預設不顯示 */
@@ -447,4 +447,5 @@ textarea {
     .month-selector {
         margin-right: 25px;
     }
+    
 }
