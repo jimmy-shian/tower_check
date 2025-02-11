@@ -17,7 +17,6 @@
         monthExists: false
     };
     */
-var clientIp = '0.0.0.0';
 
 var currentMonth ;
 var month ;
@@ -34,9 +33,7 @@ var out_index;
 
     // 監聽輸入框的鍵盤事件
 $(document).ready(function() {
-    $.get("https://api64.ipify.org?format=json", function(data) {
-      clientIp = data.ip;
-    });
+
     // 當頁面加載完成後自動聚焦到輸入框
     $('#uidInput').focus();
     // 监听 Enter 键按下
@@ -395,13 +392,13 @@ function searchUID(uid_str) {
 
     $('.search-icon').css('display', 'block');
 
-    var scriptUrl = "https://script.google.com/macros/s/AKfycbxbUpujIn0P0rJudyFvmWArO0JRPMBU6juU3LYqMC_J_lXEnHCr8k-zGfFB9P6X4-vP/exec";
+    var scriptUrl = "https://script.google.com/macros/s/AKfycbwvGH3_82QrP_NoMtqLBLTI9pMoOvvxbhH0egM6m1f2RoV7YuuXBsSYan3CYtm2Gkmlew/exec";
 
     const startTime = performance.now();
 
     $.post(
         scriptUrl,
-        { UID: uid, month: month, IP: clientIp },
+        { UID: uid, month: month },
         function(data) {
 //                console.log("data=" + JSON.stringify(data));
             if (data.error) {
