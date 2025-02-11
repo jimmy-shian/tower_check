@@ -4,9 +4,10 @@ import requests
 from datetime import datetime
 import re
 import asyncio
+import aiohttp
 
 # 設置視窗標題
-ctypes.windll.kernel32.SetConsoleTitleW("DiscordBot")
+# ctypes.windll.kernel32.SetConsoleTitleW("DiscordBot")
 
 intents = discord.Intents.default()
 intents.message_content = True  # 啟用讀取訊息內容的權限
@@ -26,6 +27,7 @@ query_queue = asyncio.Queue()
 
 
 # 查詢處理函數
+
 async def process_queries():
     while True:
         uid, message = await query_queue.get()
@@ -37,54 +39,59 @@ async def process_queries():
             
             # 顯示「正在輸入」狀態
             async with message.channel.typing():
-                # 發送 POST 請求到 Google Apps Script
-                response = requests.post(WEB_APP_URL, data={"UID": uid, "month": current_month})
+                # 使用 aiohttp 發送非同步的 POST 請求到 Google Apps Script
+                async with aiohttp.ClientSession() as session:
+                    async with session.post(WEB_APP_URL, data={"UID": uid, "month": current_month}) as response:
+                        # 檢查回應狀態碼
+                        if response.status != 200:
+                            await message.channel.send(f"查詢失敗：UID {uid} 請前往表單人工查詢，或稍後再試。")
+                            continue
+                        
+                        # 確保解析 JSON
+                        try:
+                            data = await response.json()
+                        except Exception as e:
+                            await message.channel.send(f"發生錯誤：機器人壞掉了 (UID: {uid})")
+                            continue
 
-                if response.status_code != 200:
-                    await message.channel.send(f"查詢失敗：UID {uid} 請人工表單查詢，或稍後再試。")
-                    continue
-                
-                data = response.json()
-                if "error" in data:
-                    await message.channel.send(f"錯誤：{data['error']} (UID: {uid})")
-                    continue
+                        # 處理回應資料
+                        if "error" in data:
+                            if data["error"] == "UID not found or month data not available":
+                                await message.channel.send(f"錯誤：UID not found (UID: {uid})")
+                            else:
+                                await message.channel.send(f"錯誤：{data['error']} (UID: {uid})")
+                            continue
 
-                # 處理格式化的輸出
-                second_row = data.get("secondRow", [])
-                user_data = data.get("data", [])
+                        # 格式化並輸出回應
+                        second_row = data.get("secondRow", [])
+                        user_data = data.get("data", [])
+                        completed = []
+                        not_completed = []
 
-                # 分類完成與未完成的任務
-                completed = []
-                not_completed = []
+                        for i, (title, status) in enumerate(zip(second_row, user_data)):
+                            if i == 0:
+                                continue
+                            if status == "T":
+                                completed.append(title)
+                            elif status == "F":
+                                not_completed.append(title)
 
-                for i, (title, status) in enumerate(zip(second_row, user_data)):
-                    if i == 0:  # 忽略第一行（UID）
-                        continue
-                    if status == "T":
-                        completed.append(title)
-                    elif status == "F":
-                        not_completed.append(title)
+                        output = [f"UID: {user_data[0]}"]
+                        if len(not_completed) == 6:
+                            output.append("全部未完成")
+                        elif not_completed:
+                            output.append(f"任務 {','.join([task.replace('任務', '') for task in not_completed])} 未完成")
+                        else:
+                            output.append("全完成")
 
-                # 格式化輸出
-                output = [f"UID: {user_data[0]}"]
-                
-                if len(not_completed) == 6:
-                    output.append("全部未完成")
-                elif not_completed:
-                    output.append(f"任務 {','.join([task.replace('任務', '') for task in not_completed])} 未完成")
-                else:
-                    output.append("全完成")
-                
-                # 回覆結果
-                formatted_output = [output[0]] + [f"> {line}" for line in output[1:]]
-                await message.channel.send("\n".join(formatted_output) + "\n")
+                        formatted_output = [output[0]] + [f"> {line}" for line in output[1:]]
+                        await message.channel.send("\n".join(formatted_output) + "\n")
 
         except Exception as e:
             await message.channel.send(f"發生錯誤：{str(e)} (UID: {uid})")
         finally:
             # 標記此任務已完成
             query_queue.task_done()
-
 
 # 查找最後一條機器人回覆的訊息
 
@@ -106,9 +113,9 @@ async def reply_unanswered_messages(channel):
 
     async for message in channel.history(after=last_message.created_at, limit=100):
         if message.author != client.user:  # 排除機器人的訊息
-            if "查詢" in message.content:
+            if "查" in message.content:
                 # 提取所有 UID 並加入隊列
-                uid_matches = re.findall(r"查詢[\s:：]*([0-9]+)", message.content)
+                uid_matches = re.findall(r"查[詢|询\s:：]*([0-9]+)", message.content)
                 for uid in uid_matches:
                     print(f"已將 UID {uid} 加入隊列處理")
                     await query_queue.put((uid, message))
@@ -138,8 +145,8 @@ async def on_message(message):
         return
     
     # 偵測 "查詢" 並提取所有UID
-    if "查詢" in message.content:
-        uid_matches = re.findall(r"查詢[\s:：]*([0-9]+)", message.content)
+    if "查" in message.content:
+        uid_matches = re.findall(r"查[詢|询\s:：]*([0-9]+)", message.content)
         if uid_matches:
             for uid in uid_matches:
                 # 將 UID 與訊息加入隊列
