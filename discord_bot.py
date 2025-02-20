@@ -8,7 +8,7 @@ from discord.ext import commands
 # 設定機器人所需權限
 intents = discord.Intents.default()
 intents.message_content = True  # 啟用讀取訊息內容的權限
-intents.members = True  # 啟用成員相關權限,這樣才能發送私人訊息
+intents.members = True  # 啟用成員相關權限, 這樣才能發送私人訊息
 
 # 建立 bot，並設定 application_id（請將下方的 "1331122986673115257" 替換成你自己的應用程式 ID）
 bot = commands.Bot(command_prefix="!", intents=intents, application_id="1331122986673115257")
@@ -20,9 +20,8 @@ WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx-EPvS6LW47CZksZ0GihuvHd
 TARGET_CHANNEL_IDS = {1085509216824999996, 1107524844700045345}  # 神魔頻道 & 個人頻道
 BOT_LIKE_USER_ID = 639382101455667202  # 機器人類型的使用者 ID
 
-# 建立一個 asyncio Queue 來管理查詢請求
-query_queue = asyncio.Queue()
-
+# 為處理文字查詢使用一個 semaphore (限制同時只處理一筆文字查詢)
+text_query_semaphore = asyncio.Semaphore(1)
 
 ###############################################################################
 # Slash Command 指令 1: /任務
@@ -63,7 +62,6 @@ async def task(interaction: discord.Interaction):
             reply_message = "以下是本月的任務:\n\n" + "\n\n".join(missions_text)
             await interaction.followup.send(reply_message, ephemeral=True)
 
-
 ###############################################################################
 # Slash Command 指令 2: /查詢
 # 此指令接受一個 uid 參數，回傳該 UID 當前月的查詢狀態
@@ -72,7 +70,7 @@ async def task(interaction: discord.Interaction):
 async def query(interaction: discord.Interaction, uid: str):
     await interaction.response.defer(ephemeral=True)
     current_month = datetime.now().month
-    print(f"查詢 UID {uid} ，處理中")
+    print(f"查詢 UID {uid} ，處理中 (Slash Command)")
 
     async with aiohttp.ClientSession() as session:
         async with session.post(WEB_APP_URL, data={"UID": uid, "month": current_month, "IP": "Discord_bot_command"}) as response:
@@ -86,7 +84,7 @@ async def query(interaction: discord.Interaction, uid: str):
                 return
 
             if "error" in data:
-                await interaction.followup.send(f"錯誤：UID not found (UID: {uid})", ephemeral=True) #{data['error']}
+                await interaction.followup.send(f"錯誤：UID not found (UID: {uid})", ephemeral=True)
                 return
 
             second_row = data.get("secondRow", [])
@@ -113,44 +111,49 @@ async def query(interaction: discord.Interaction, uid: str):
             formatted_output = [output[0]] + [f"> {line}" for line in output[1:]]
             await interaction.followup.send("\n".join(formatted_output), ephemeral=False)
 
+###############################################################################
+# Slash Command 指令 3: /前往
+# 此指令觸發後會帶使用者前往指定網址（附上按鈕連結）
+###############################################################################
+@bot.tree.command(name="前往", description="前往指定網址")
+async def go(interaction: discord.Interaction):
+    url = "https://docs.google.com/spreadsheets/d/1pqu3CQfHbmvnc122q6Eii9LU_v8BUD-tNuPr2X86-Ow/"
+    # 建立一個按鈕，點擊後可前往指定網址
+    button = discord.ui.Button(label="點此前往", url=url)
+    view = discord.ui.View()
+    view.add_item(button)
+    await interaction.response.send_message("請點擊下方按鈕前往官方表格：", view=view, ephemeral=True)
+
 
 ###############################################################################
-# 訊息事件監聽 & 查詢處理
+# 處理文字查詢的函式 (由 on_message 觸發)
 ###############################################################################
-async def process_queries():
-    while True:
-        uid, message = await query_queue.get()
+async def process_text_query(uid, message):
+    # 利用 semaphore 確保同一時間只處理一筆文字查詢
+    async with text_query_semaphore:
         try:
-            # 當前月份
             current_month = datetime.now().month
-            # print("UID", uid, "month", current_month)
-            
+            print(f"查詢 UID {uid} ，處理中 (文字訊息)")
             # 顯示「正在輸入」狀態
             async with message.channel.typing():
-                # 使用 aiohttp 發送非同步的 POST 請求到 Google Apps Script
                 async with aiohttp.ClientSession() as session:
                     async with session.post(WEB_APP_URL, data={"UID": uid, "month": current_month, "IP": "Discord_bot_message"}) as response:
-                        # 檢查回應狀態碼
                         if response.status != 200:
                             await message.channel.send(f"查詢失敗：UID {uid} 請前往表單人工查詢，或稍後再試。")
-                            continue
-                        
-                        # 確保解析 JSON
+                            return
                         try:
                             data = await response.json()
                         except Exception as e:
                             await message.channel.send(f"發生錯誤：機器人壞掉了 (UID: {uid})")
-                            continue
+                            return
 
-                        # 處理回應資料
                         if "error" in data:
                             if data["error"] == "UID not found or month data not available":
                                 await message.channel.send(f"錯誤：UID not found (UID: {uid})")
                             else:
                                 await message.channel.send(f"錯誤：{data['error']} (UID: {uid})")
-                            continue
+                            return
 
-                        # 格式化並輸出回應
                         second_row = data.get("secondRow", [])
                         user_data = data.get("data", [])
                         completed = []
@@ -174,47 +177,40 @@ async def process_queries():
 
                         formatted_output = [output[0]] + [f"> {line}" for line in output[1:]]
                         await message.channel.send("\n".join(formatted_output) + "\n")
-
         except Exception as e:
             await message.channel.send(f"發生錯誤：{str(e)} (UID: {uid})")
-        finally:
-            # 標記此任務已完成
-            query_queue.task_done()
 
-
+###############################################################################
+# 訊息事件監聽 (處理文字中的查詢)
+###############################################################################
 @bot.event
 async def on_message(message):
     if message.author == bot.user or message.channel.id not in TARGET_CHANNEL_IDS:
         return
 
+    # 使用正規表示式擷取查詢的 UID
     uid_matches = re.findall(r"查[詢|询\s:：]*([0-9]+)", message.content)
     if uid_matches:
         for uid in uid_matches:
-            await query_queue.put((uid, message))
-            print(f"已將 UID {uid} 加入隊列處理")
+            # 將文字查詢以非同步任務方式處理，避免阻塞其他事件（如 Slash 指令）
+            asyncio.create_task(process_text_query(uid, message))
+            print(f"已將 UID {uid} 的文字查詢加入處理")
     else:
         # 檢查是否有任何 5 位數以上的數字，如果有則提示格式錯誤
         contains_numbers = re.search(r"\d{5,}", message.content)
         if contains_numbers:
             await message.channel.send(f'請確認輸入格式，( "查詢XXXX" 或使用 "/查詢" 指令進行搜尋 )')
 
-# ===== 刪除原本在全域位置建立背景任務的程式碼 =====
-# bot.loop.create_task(process_queries())
-# ======================================================
-
 ###############################################################################
-# 非同步初始化：利用 setup_hook 建立背景任務
-###############################################################################
-async def setup_background_tasks():
-    asyncio.create_task(process_queries())
-bot.setup_hook = setup_background_tasks  # 將 setup_hook 指向上面的非同步初始化函式
-
-###############################################################################
-# 啟動機器
+# 啟動機器人的事件：同步 Slash Command 並顯示登入訊息
 ###############################################################################
 @bot.event
 async def on_ready():
     await bot.tree.sync()
     print(f"目前登入身份 --> {bot.user}")
+
+###############################################################################
+# 啟動機器人
+###############################################################################
 
 bot.run()
