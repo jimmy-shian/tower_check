@@ -86,7 +86,7 @@ async def query(interaction: discord.Interaction, uid: str):
                 return
 
             if "error" in data:
-                await interaction.followup.send(f"錯誤：{data['error']} (UID: {uid})", ephemeral=True)
+                await interaction.followup.send(f"錯誤：UID not found (UID: {uid})", ephemeral=True) #{data['error']}
                 return
 
             second_row = data.get("secondRow", [])
@@ -192,6 +192,11 @@ async def on_message(message):
         for uid in uid_matches:
             await query_queue.put((uid, message))
             print(f"已將 UID {uid} 加入隊列處理")
+    else:
+        # 檢查是否有任何 5 位數以上的數字，如果有則提示格式錯誤
+        contains_numbers = re.search(r"\d{5,}", message.content)
+        if contains_numbers:
+            await message.channel.send(f'請確認輸入格式，( "查詢XXXX" 或使用 "/查詢" 指令進行搜尋 )')
 
 # ===== 刪除原本在全域位置建立背景任務的程式碼 =====
 # bot.loop.create_task(process_queries())
