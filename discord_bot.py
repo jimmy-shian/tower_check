@@ -4,6 +4,8 @@ import re
 import asyncio
 from datetime import datetime
 from discord.ext import commands
+import time
+from discord.ui import Select, View
 
 # 設定機器人所需權限
 intents = discord.Intents.default()
@@ -14,7 +16,7 @@ intents.members = True  # 啟用成員相關權限, 這樣才能發送私人訊�
 bot = commands.Bot(command_prefix="!", intents=intents, application_id="1331122986673115257")
 
 # Google Apps Script 的 Web App URL
-WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx-EPvS6LW47CZksZ0GihuvHdlEahQiReSF1nzFCKh0QVbkW9Z-kTVhYg5i3APzd3mWXQ/exec"
+WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyUIuDJj4tgP991td2PTxZihaWDRic1W2Upz9EJ0tE4ID5w5JuNXuMD6bnENFhRzaILfQ/exec"
 
 # 指定要閱讀訊息的頻道 ID
 TARGET_CHANNEL_IDS = {1085509216824999996, 1107524844700045345}  # 神魔頻道 & 個人頻道
@@ -47,7 +49,8 @@ async def task(interaction: discord.Interaction):
             for mission in data["mission"]:
                 if len(mission) >= 3:
                     mission_title = mission[1]
-                    mission_desc = mission[2]
+                    mission_desc = mission[2] + ("\n" + mission[3] if mission[3] else "")
+
                     if not mission_title or not mission_desc:
                         undefined_missions.append(mission[0])
                     else:
@@ -59,7 +62,7 @@ async def task(interaction: discord.Interaction):
                 undefined_message = f"⚠️ 以下任務尚未訂定：任務{', '.join(map(str, undefined_missions))}"
                 missions_text.append(undefined_message)
 
-            reply_message = "以下是本月的任務:\n\n" + "\n\n".join(missions_text)
+            reply_message = "以下是本月的任務:\n\n" + "\n\n".join(missions_text) + f"\n\n{data['a1Data']}"
             await interaction.followup.send(reply_message, ephemeral=True)
 
 ###############################################################################
@@ -69,6 +72,9 @@ async def task(interaction: discord.Interaction):
 @bot.tree.command(name="查詢", description="查詢 UID 任務完成度")
 async def query(interaction: discord.Interaction, uid: str):
     await interaction.response.defer(ephemeral=True)
+    if not re.match(r'^\d{5,}$', uid):
+        await interaction.followup.send("不要玩機器人，請輸入正確uid", ephemeral=True)
+        return
     current_month = datetime.now().month
     print(f"查詢 UID {uid} ，處理中 (Slash Command)")
 
@@ -89,6 +95,8 @@ async def query(interaction: discord.Interaction, uid: str):
 
             second_row = data.get("secondRow", [])
             user_data = data.get("data", [])
+            a1 = data.get("firstRow", [])
+
             completed = []
             not_completed = []
 
@@ -108,7 +116,7 @@ async def query(interaction: discord.Interaction, uid: str):
             else:
                 output.append("全完成")
 
-            formatted_output = [output[0]] + [f"> {line}" for line in output[1:]]
+            formatted_output = [output[0]] + [f"> {line}" for line in output[1:]] + [f"\n{a1[0]}"]
             await interaction.followup.send("\n".join(formatted_output), ephemeral=False)
 
 ###############################################################################
@@ -123,6 +131,53 @@ async def go(interaction: discord.Interaction):
     view = discord.ui.View()
     view.add_item(button)
     await interaction.response.send_message("請點擊下方按鈕前往官方表格：", view=view, ephemeral=True)
+
+###############################################################################
+# Slash Command 指令 4: /常見問題
+# 此指令提供「如何報名」和「為什麼紀錄沒有更新」的解答
+###############################################################################
+@bot.tree.command(name="常見問題", description="查看常見問題的解答")
+async def faq(interaction: discord.Interaction):
+    # 创建下拉菜单选项
+    select = Select(
+        placeholder="選擇你想問的問題",  # 提示信息
+        options=[
+            discord.SelectOption(label="如何報名", description="如何報名參加活動", value="如何報名"),
+            discord.SelectOption(label="為什麼紀錄沒有更新", description="了解紀錄更新問題", value="為什麼紀錄沒有更新")
+        ]
+    )
+
+    # 定义一个回调函数来处理用户选择
+    async def select_callback(interaction: discord.Interaction):
+        問題 = select.values[0]  # 获取用户选择的选项
+        faq_responses = {
+            "如何報名": (
+                "你在小教室畢業的時候應該有填一份表單，填了就報名了，"
+                "遊戲裡的信箱才會收到這裡的連結。\n\n"
+                "群組任務是官方會自己統計，表單定期更新，"
+                "所以表單裡找不到你的話可以等到下一次更新再找找看。\n\n"
+                "更新了還找不到的話就 @小幫手"
+            ),
+            "為什麼紀錄沒有更新": (
+                "由於表單是人手手動更新，所以關卡打過後都需要等到下次人員更新後，"
+                "才會看到標註。\n\n通常是有打過，獎勳就一定會進到背包，"
+                "如果沒有，再標註 @小幫手。"
+            ),
+        }
+
+        response = faq_responses.get(問題, "請選擇有效的問題：「如何報名」或「為什麼紀錄沒有更新」")
+        await interaction.response.send_message(response, ephemeral=True)  # 只對發送者可見
+
+    # 设置回调函数
+    select.callback = select_callback
+
+    # 创建 View 来显示 Select 元素
+    view = View()
+    view.add_item(select)
+
+    # 发送带有选择菜单的消息，且仅对用户可见
+    await interaction.response.send_message("請選擇你有問題的項目：", view=view, ephemeral=True)  # 只對發送者可見
+
 
 
 ###############################################################################
@@ -198,8 +253,17 @@ async def on_message(message):
     else:
         # 檢查是否有任何 5 位數以上的數字，如果有則提示格式錯誤
         contains_numbers = re.search(r"\d{5,}", message.content)
+        counta = 5
         if contains_numbers:
-            await message.channel.send(f'請確認輸入格式，( "查詢XXXX" 或使用 "/查詢" 指令進行搜尋 )')
+            error_message = await message.channel.send(f'請確認輸入格式，( "查詢XXXX" 或使用 "/查詢" 指令進行搜尋 )\n這條消息將於 {counta} 秒後刪除')
+            time.sleep(0.7)
+            # 倒计时提示
+            for i in range(counta-1, 0, -1):
+                await error_message.edit(content=f'請確認輸入格式，( "查詢XXXX" 或使用 "/查詢" 指令進行搜尋 )\n這條消息將於 {i} 秒後刪除')
+                await asyncio.sleep(1)
+
+            # 等待 10 秒后删除错误消息
+            await error_message.delete()
 
 ###############################################################################
 # 啟動機器人的事件：同步 Slash Command 並顯示登入訊息
