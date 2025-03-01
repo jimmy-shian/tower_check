@@ -34,7 +34,7 @@ async def task(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
     print(f"查詢當前月分的任務說明&獎勳")
 
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:
         async with session.get(WEB_APP_URL) as response:
             if response.status != 200:
                 await interaction.followup.send("無法獲取任務資料，請稍後再試。", ephemeral=True)
@@ -78,7 +78,7 @@ async def query(interaction: discord.Interaction, uid: str):
     current_month = datetime.now().month
     print(f"查詢 UID {uid} ，處理中 (Slash Command)")
 
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:
         async with session.post(WEB_APP_URL, data={"UID": uid, "month": current_month, "IP": "Discord_bot_command"}) as response:
             if response.status != 200:
                 await interaction.followup.send(f"查詢失敗：UID {uid} 請稍後再試。", ephemeral=True)
@@ -191,7 +191,7 @@ async def process_text_query(uid, message):
             print(f"查詢 UID {uid} ，處理中 (文字訊息)")
             # 顯示「正在輸入」狀態
             async with message.channel.typing():
-                async with aiohttp.ClientSession() as session:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:
                     async with session.post(WEB_APP_URL, data={"UID": uid, "month": current_month, "IP": "Discord_bot_message"}) as response:
                         if response.status != 200:
                             await message.channel.send(f"查詢失敗：UID {uid} 請前往表單人工查詢，或稍後再試。")
