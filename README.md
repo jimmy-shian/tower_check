@@ -1,3 +1,18 @@
+<!--
+---
+title: Gradio Discord Bot Server
+emoji: 📚
+colorFrom: purple
+colorTo: pink
+sdk: gradio
+sdk_version: 5.35.0
+app_file: app.py
+pinned: false
+license: openrail
+---
+
+Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+-->
 ## 🤖 Discord 任務查詢機器人使用說明
 
 這是一個幫助大家查詢任務進度的小幫手機器人，使用很簡單！只要打關鍵字或使用 `/` 指令，就能查到自己目前的完成狀況、獎勵、或其他問題解答。
